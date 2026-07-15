@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Apple Business – Roles &amp; Permissions</title>
+<style>
+  :root{
+    --bg:#f5f5f7;
+    --card:#ffffff;
+    --ink:#1d1d1f;
+    --muted:#6e6e73;
+    --border:#e4e4e7;
+    --blue:#0071e3;
+    --green:#1a8f4c;
+    --green-bg:#e8f7ee;
+    --amber:#b06a00;
+    --amber-bg:#fff4e0;
+    --red:#c5221f;
+    --red-bg:#fdecea;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system, "SF Pro Text", "Segoe UI", Helvetica, Arial, sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+  }
+  header{
+    padding:28px 32px 18px;
+    max-width:1300px;
+    margin:0 auto;
+  }
+  header h1{
+    font-size:24px;
+    font-weight:600;
+    margin:0 0 4px;
+  }
+  header p{
+    margin:0;
+    color:var(--muted);
+    font-size:14px;
+    line-height:1.5;
+  }
+  .layout{
+    max-width:1300px;
+    margin:0 auto;
+    padding:0 32px 60px;
+    display:grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap:24px;
+    align-items:flex-start;
+  }
+  @media (max-width: 900px){
+    .layout{grid-template-columns: 1fr;}
+  }
+  .col-left, .col-right{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .col-right{
+    position:sticky;
+    top:20px;
+  }
+  .toolbar{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    margin-bottom:4px;
+  }
+  .toolbar button{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:7px 12px;
+    font-size:13px;
+    cursor:pointer;
+    color:var(--ink);
+  }
+  .toolbar button:hover{background:#ececef;}
+  .selected-count{
+    font-size:13px;
+    color:var(--muted);
+    margin-left:auto;
+  }
+  .category{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    overflow:hidden;
+  }
+  .category-header{
+    padding:14px 18px;
+    font-weight:600;
+    font-size:15px;
+    cursor:pointer;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    user-select:none;
+  }
+  .category-header .chev{
+    transition:transform .15s ease;
+    color:var(--muted);
+    font-size:12px;
+  }
+  .category.collapsed .chev{transform:rotate(-90deg);}
+  .category-body{
+    border-top:1px solid var(--border);
+  }
+  .category.collapsed .category-body{display:none;}
+  .perm-row{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    padding:10px 18px;
+    border-bottom:1px solid #f0f0f2;
+    font-size:13.5px;
+    line-height:1.4;
+  }
+  .perm-row:last-child{border-bottom:none;}
+  .perm-row:hover{background:#fafafa;}
+  .perm-row input{
+    margin-top:2px;
+    width:16px;
+    height:16px;
+    accent-color:var(--blue);
+    flex-shrink:0;
+    cursor:pointer;
+  }
+  .perm-row label{cursor:pointer;}
+  .cat-count{
+    font-size:12px;
+    color:var(--muted);
+    font-weight:400;
+  }
+  .role-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:16px 18px;
+  }
+  .role-card h2{
+    margin:0 0 12px;
+    font-size:15px;
+    font-weight:600;
+    color:var(--muted);
+  }
+  .role{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+    padding:12px 14px;
+    border-radius:10px;
+    margin-bottom:8px;
+    border:1px solid transparent;
+  }
+  .role:last-child{margin-bottom:0;}
+  .role-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:8px;
+  }
+  .role-name{font-weight:600; font-size:14.5px;}
+  .role-verdict{font-size:12px; font-weight:600; white-space:nowrap;}
+  .role-detail{font-size:12px; color:var(--muted); margin-top:2px;}
+  .role.ok{background:var(--green-bg); border-color:#cdeedb;}
+  .role.ok .role-verdict{color:var(--green);}
+  .role.warn{background:var(--amber-bg); border-color:#f3ddb0;}
+  .role.warn .role-verdict{color:var(--amber);}
+  .role.bad{background:var(--red-bg); border-color:#f5c9c6;}
+  .role.bad .role-verdict{color:var(--red);}
+  .role.empty{background:#f5f5f7; border-color:var(--border);}
+  .role.empty .role-verdict{color:var(--muted);}
+  .empty-state{
+    font-size:13px;
+    color:var(--muted);
+    padding:6px 4px;
+  }
+  .legend{
+    display:flex;
+    flex-wrap:wrap;
+    gap:14px;
+    font-size:12px;
+    color:var(--muted);
+    padding:2px 4px;
+  }
+  .legend span{display:flex; align-items:center; gap:6px;}
+  .dot{width:9px; height:9px; border-radius:50%; display:inline-block;}
+  .dot.ok{background:var(--green);}
+  .dot.warn{background:var(--amber);}
+  .dot.bad{background:var(--red);}
+  footer{
+    max-width:1300px;
+    margin:0 auto;
+    padding:0 32px 40px;
+    font-size:12px;
+    color:var(--muted);
+  }
+  footer a{color:var(--muted);}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Apple Business — Roles &amp; Permissions checker</h1>
+  <p>Check the organization permissions you need. On the right you'll immediately see which default role(s) qualify.<br>
+  Source: <a href="https://support.apple.com/guide/business/default-roles-and-permissions-axm27678acfb/1/web/1" target="_blank">Apple Business User Guide – Default roles and permissions</a> ("off by default" permissions can be turned on per user by an Organization Administrator or IT Administrator; "always off" can never be enabled).</p>
+</header>
+
+<div class="layout">
+  <div class="col-left">
+    <div class="toolbar">
+      <button onclick="expandAll()">Expand all</button>
+      <button onclick="collapseAll()">Collapse all</button>
+      <button onclick="clearAll()">Clear selection</button>
+      <span class="selected-count" id="selCount">0 permissions selected</span>
+    </div>
+    <div id="categories"></div>
+  </div>
+
+  <div class="col-right">
+    <div class="role-card">
+      <h2>Qualifying roles</h2>
+      <div class="legend">
+        <span><span class="dot ok"></span>directly available</span>
+        <span><span class="dot warn"></span>needs to be enabled manually</span>
+        <span><span class="dot bad"></span>not possible</span>
+      </div>
+      <div id="results" style="margin-top:12px;"></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Local tool, no data is sent anywhere. Role order: Organization Administrator, IT Administrator, Marketing Administrator, People Manager, Device Enrollment Manager, Content Manager.
+</footer>
+
+<script>
+// Status codes per role, fixed order:
+// [Organization Administrator, IT Administrator, Marketing Administrator, People Manager, Device Enrollment Manager, Content Manager]
+// codes: "on"   = always on (guaranteed on)
+//        "off"  = always off (never possible)
+//        "don"  = on by default (adjustable, on by default)
+//        "doff" = off by default (adjustable, off by default)
+const ROLES = ["Organization Administrator","IT Administrator","Marketing Administrator","People Manager","Device Enrollment Manager","Content Manager"];
+
+const DATA = [
+  { cat:"Organization", perms:[
+    ["View organization details", ["on","on","on","doff","doff","doff"]],
+    ["Edit organization details", ["on","off","off","off","off","off"]],
+    ["Submit information to verify the organization", ["on","on","on","don","doff","doff"]],
+    ["Accept Apple Business Terms of Service", ["on","off","off","off","off","off"]],
+    ["Submit tax status for subscriptions and app purchases", ["on","on","off","doff","doff","doff"]],
+    ["View, edit, and delete the organization's domains", ["on","on","on","don","doff","doff"]],
+    ["Edit access to Apple services (Managed Apple Accounts, Sign in with Apple)", ["on","on","off","don","doff","doff"]],
+    ["Reassign AppleSeed for IT Team feedback", ["don","on","off","don","doff","doff"]],
+    ["Download beta software, view program resources, submit feedback", ["don","on","doff","don","doff","don"]],
+    ["Create, edit, and delete organizational units", ["on","on","off","don","doff","doff"]],
+    ["Access audit events via the Admin API", ["on","don","off","doff","doff","doff"]],
+  ]},
+  { cat:"Organization access", perms:[
+    ["View shared access and connected apps", ["on","off","on","doff","doff","doff"]],
+    ["Manage shared access", ["on","off","on","off","off","off"]],
+  ]},
+  { cat:"API / OAuth", perms:[
+    ["Create, edit, and delete Admin API app accounts", ["on","off","off","off","off","off"]],
+    ["View status of Partner API access, webhooks, and OAuth apps", ["on","off","on","doff","doff","doff"]],
+    ["Manage Partner API", ["on","off","on","off","off","off"]],
+    ["Manage webhooks", ["on","off","on","off","off","off"]],
+    ["Manage OAuth apps", ["on","off","on","off","off","off"]],
+  ]},
+  { cat:"People", perms:[
+    ["Create, edit, and delete Managed Apple Accounts", ["on","on","off","don","doff","doff"]],
+    ["Invite users and remove invited users", ["on","on","on","doff","doff","doff"]],
+    ["View, edit, and delete roles", ["on","on","off","don","doff","doff"]],
+    ["View, edit, and delete the organization's domains (People section)", ["on","off","off","off","off","off"]],
+    ["Set up/configure federation, connect to an identity provider (IdP)", ["on","on","off","don","doff","doff"]],
+    ["Reset Managed Apple Account passwords", ["on","on","off","don","doff","doff"]],
+    ["Use iforgot.apple.com to reset password", ["don","off","off","off","off","off"]],
+    ["Use FaceTime", ["don","doff","doff","don","don","don"]],
+    ["Use iMessage", ["don","doff","doff","don","don","don"]],
+    ["Create, edit, and delete user groups", ["on","on","off","don","doff","doff"]],
+  ]},
+  { cat:"Devices", perms:[
+    ["View device management services, manage default platform assignment, add devices via Apple Configurator", ["on","on","off","doff","don","doff"]],
+    ["Assign devices to device management services / manage default platform assignment", ["on","on","off","doff","don","doff"]],
+    ["View, add, and delete device management services", ["on","on","off","doff","don","doff"]],
+    ["Release devices from the organization", ["on","on","off","doff","don","doff"]],
+    ["Remove Activation Lock from devices", ["on","on","off","doff","don","doff"]],
+    ["Add Apple Customer Numbers and Reseller Numbers", ["on","on","off","doff","doff","doff"]],
+    ["View Blueprints", ["on","on","off","doff","doff","doff"]],
+    ["Manage Blueprints", ["on","on","off","doff","doff","doff"]],
+    ["View device configurations", ["on","on","off","doff","doff","doff"]],
+    ["Create, edit, and delete device configurations", ["on","on","off","doff","doff","doff"]],
+    ["View and manage devices using built-in device management", ["on","on","off","doff","doff","doff"]],
+  ]},
+  { cat:"AppleCare", perms:[
+    ["View AppleCare repair requests", ["on","on","off","doff","doff","doff"]],
+    ["Create, edit, and delete AppleCare repair requests", ["on","on","off","doff","doff","doff"]],
+  ]},
+  { cat:"Apps & Books", perms:[
+    ["View apps and books", ["on","on","off","doff","doff","don"]],
+    ["Get licenses for Apps and Books", ["on","on","off","doff","doff","don"]],
+    ["Assign licenses for Apps and Books", ["on","on","off","doff","doff","don"]],
+  ]},
+  { cat:"Subscriptions", perms:[
+    ["View Apple Business subscriptions", ["on","on","off","doff","doff","don"]],
+    ["View subscription billing info incl. transaction history", ["on","on","off","off","off","off"]],
+    ["Edit Apple Business subscriptions", ["on","on","off","off","off","doff"]],
+    ["View subscription payment method", ["on","on","off","doff","doff","don"]],
+    ["Edit subscription payment method", ["on","on","off","doff","doff","doff"]],
+    ["Purchase Apple Business subscriptions", ["on","on","off","off","off","off"]],
+  ]},
+  { cat:"Email service", perms:[
+    ["Manage business email service", ["on","on","off","doff","doff","doff"]],
+  ]},
+  { cat:"Brand", perms:[
+    ["View brand profiles", ["on","on","on","doff","doff","doff"]],
+    ["Manage brand profiles", ["on","off","on","off","off","off"]],
+  ]},
+  { cat:"Brand locations", perms:[
+    ["View locations and insights", ["on","off","on","doff","doff","doff"]],
+    ["Manage locations", ["on","off","on","off","off","off"]],
+  ]},
+  { cat:"Branded Mail", perms:[
+    ["View Branded Mail", ["on","off","on","doff","doff","doff"]],
+    ["Manage Branded Mail", ["on","off","on","off","off","off"]],
+  ]},
+  { cat:"Tap to Pay on iPhone", perms:[
+    ["View Tap to Pay on iPhone", ["on","off","on","doff","doff","doff"]],
+    ["Add Merchant IDs", ["on","off","off","off","off","off"]],
+    ["Manage Tap to Pay on iPhone", ["on","off","on","doff","doff","doff"]],
+  ]},
+  { cat:"Verify with Wallet on the Web", perms:[
+    ["View Verify with Wallet on the Web", ["on","off","on","doff","doff","doff"]],
+    ["Manage Verify with Wallet on the Web", ["on","off","on","doff","doff","doff"]],
+  ]},
+];
+
+let selected = new Set(); // keys: "cat|permName"
+
+function permKey(cat, name){ return cat + "|" + name; }
+
+function render(){
+  const container = document.getElementById("categories");
+  container.innerHTML = "";
+  DATA.forEach((group, gi) => {
+    const div = document.createElement("div");
+    div.className = "category";
+    div.id = "cat-" + gi;
+    const header = document.createElement("div");
+    header.className = "category-header";
+    header.onclick = () => div.classList.toggle("collapsed");
+    header.innerHTML = `<span>${group.cat}</span><span class="cat-count" id="catcount-${gi}"></span><span class="chev">▾</span>`;
+    div.appendChild(header);
+    const body = document.createElement("div");
+    body.className = "category-body";
+    group.perms.forEach(([name]) => {
+      const key = permKey(group.cat, name);
+      const row = document.createElement("div");
+      row.className = "perm-row";
+      const id = "chk-" + key.replace(/[^a-zA-Z0-9]/g,"_");
+      row.innerHTML = `<input type="checkbox" id="${id}" data-key="${key.replace(/"/g,'&quot;')}"><label for="${id}">${name}</label>`;
+      row.querySelector("input").addEventListener("change", onToggle);
+      body.appendChild(row);
+    });
+    div.appendChild(body);
+    container.appendChild(div);
+  });
+  updateCatCounts();
+}
+
+function onToggle(e){
+  const key = e.target.getAttribute("data-key");
+  if(e.target.checked) selected.add(key);
+  else selected.delete(key);
+  updateCatCounts();
+  updateResults();
+}
+
+function updateCatCounts(){
+  DATA.forEach((group, gi) => {
+    const count = group.perms.filter(([name]) => selected.has(permKey(group.cat,name))).length;
+    const el = document.getElementById("catcount-"+gi);
+    el.textContent = count > 0 ? `${count} selected` : "";
+  });
+  document.getElementById("selCount").textContent = selected.size + " permission" + (selected.size===1?"":"s") + " selected";
+}
+
+function expandAll(){ document.querySelectorAll(".category").forEach(c => c.classList.remove("collapsed")); }
+function collapseAll(){ document.querySelectorAll(".category").forEach(c => c.classList.add("collapsed")); }
+function clearAll(){
+  selected.clear();
+  document.querySelectorAll('.perm-row input[type=checkbox]').forEach(cb => cb.checked = false);
+  updateCatCounts();
+  updateResults();
+}
+
+function getSelectedPerms(){
+  const list = [];
+  DATA.forEach(group => group.perms.forEach(([name, statuses]) => {
+    const key = permKey(group.cat, name);
+    if(selected.has(key)) list.push({ cat: group.cat, name, statuses });
+  }));
+  return list;
+}
+
+function updateResults(){
+  const resultsEl = document.getElementById("results");
+  const perms = getSelectedPerms();
+  if(perms.length === 0){
+    resultsEl.innerHTML = '<div class="empty-state">No permissions selected yet. Check the permissions you need on the left.</div>';
+    return;
+  }
+
+  const roleResults = ROLES.map((roleName, ri) => {
+    let blocked = [], needsToggle = [], ok = [];
+    perms.forEach(p => {
+      const status = p.statuses[ri];
+      if(status === "off") blocked.push(p.name);
+      else if(status === "doff") needsToggle.push(p.name);
+      else ok.push(p.name);
+    });
+    let verdictClass, verdictText;
+    if(blocked.length > 0){
+      verdictClass = "bad";
+      verdictText = `Not possible (${blocked.length} of ${perms.length} never available)`;
+    } else if(needsToggle.length > 0){
+      verdictClass = "warn";
+      verdictText = `Possible, ${needsToggle.length} to enable manually`;
+    } else {
+      verdictClass = "ok";
+      verdictText = "Directly available";
+    }
+    return { roleName, verdictClass, verdictText, blocked, needsToggle, ok };
+  });
+
+  const order = { ok:0, warn:1, bad:2 };
+  roleResults.sort((a,b) => {
+    if(order[a.verdictClass] !== order[b.verdictClass]) return order[a.verdictClass]-order[b.verdictClass];
+    if(a.verdictClass === "warn") return a.needsToggle.length - b.needsToggle.length;
+    if(a.verdictClass === "bad") return a.blocked.length - b.blocked.length;
+    return 0;
+  });
+
+  resultsEl.innerHTML = roleResults.map(r => {
+    let detail = "";
+    if(r.verdictClass === "warn"){
+      detail = `Needs enabling: ${r.needsToggle.join(", ")}`;
+    } else if(r.verdictClass === "bad"){
+      detail = `Never available: ${r.blocked.join(", ")}`;
+    }
+    return `<div class="role ${r.verdictClass}">
+      <div class="role-top">
+        <span class="role-name">${r.roleName}</span>
+        <span class="role-verdict">${r.verdictText}</span>
+      </div>
+      ${detail ? `<div class="role-detail">${detail}</div>` : ""}
+    </div>`;
+  }).join("");
+}
+
+render();
+updateResults();
+</script>
+
+</body>
+</html>

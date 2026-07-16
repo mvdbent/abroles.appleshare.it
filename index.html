@@ -100,19 +100,19 @@ body:not(.dark) #sun{display:none;}
   margin:0 auto;
 }
 .page-header h1{
-  font-size:28px;
+  font-size:40px;
   font-weight:700;
   margin:0 0 8px;
   color:var(--primary);
 }
 .page-header p{
   margin:0;
-  color:var(--secondary);
-  font-size:14px;
+  color:var(--content);
+  font-size:18px;
   line-height:1.6;
 }
-.page-header a{color:var(--secondary); border-bottom:1px solid var(--secondary);}
-.page-header a:hover{color:var(--primary); border-bottom-color:var(--primary);}
+.page-header a{color:inherit; box-shadow:0 1px;}
+.page-header a:hover{box-shadow:0 1px;}
 
 .layout{
   max-width:var(--main-width);
@@ -301,15 +301,16 @@ body:not(.dark) #sun{display:none;}
       <li><a href="https://appleshare.it/posts/" title="Blog"><span>Blog</span></a></li>
       <li><a href="https://appleshare.it/links/" title="Links"><span>Links</span></a></li>
       <li><a class="active" href="#" title="Roles checker"><span>Roles checker</span></a></li>
+      <li><a href="https://appleshare.it/search/" title="Search (Alt + /)" accesskey="/"><span>Search</span></a></li>
     </ul>
   </nav>
 </header>
 
 <main class="main">
   <div class="page-header">
-    <h1>Apple Business — Roles &amp; Permissions checker</h1>
-    <p>Check the organization permissions you need. On the right you'll immediately see which default role(s) qualify.<br>
-    Source: <a href="https://support.apple.com/guide/business/default-roles-and-permissions-axm27678acfb/1/web/1" target="_blank">Apple Business User Guide – Default roles and permissions</a> ("off by default" permissions can be turned on per user by an Organization Administrator or IT Administrator; "always off" can never be enabled).</p>
+    <h1>Roles &amp; Permissions checker - Apple Business</h1>
+    <p>Check the organization permissions you need. On the right you'll immediately see which default role(s) qualify.<br><br>
+    <i>Source: <a href="https://support.apple.com/guide/business/default-roles-and-permissions-axm27678acfb/1/web/1" target="_blank" rel="noopener"><span style="color:#3fc69b">Apple Business User Guide – Default roles and permissions</span></a> </i> </p>
   </div>
 
   <div class="layout">
@@ -339,7 +340,6 @@ body:not(.dark) #sun{display:none;}
 
 <footer class="footer">
   <span>&copy; 2026 <a href="https://appleshare.it/">AppleShare IT</a></span><br>
-  <span>Local tool, no data is sent anywhere. Role order: Organization Administrator, IT Administrator, Marketing Administrator, People Manager, Device Enrollment Manager, Content Manager.</span>
 </footer>
 
 <script>

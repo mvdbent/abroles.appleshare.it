@@ -1,0 +1,48 @@
+name: Check Apple roles & permissions page
+
+on:
+  schedule:
+    # 06:00 UTC on the 1st of every month. Adjust the cron below to change frequency.
+    - cron: "0 6 1 * *"
+  workflow_dispatch: {}
+    # Lets you trigger this manually from the Actions tab, no need to wait for the schedule.
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4
+
+      - name: Run check script
+        id: check
+        run: python scripts/check_apple_roles_page.py
+
+      - name: Commit updated snapshot
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/apple-roles-snapshot.txt
+          git commit -m "chore: update Apple roles & permissions snapshot" || echo "Nothing to commit"
+          git push
+
+      - name: Create issue on change
+        if: steps.check.outputs.changed == 'true'
+        uses: peter-evans/create-issue-from-file@v5
+        with:
+          title: "Apple's Roles & Permissions guide changed - review index.html"
+          content-filepath: ./diff_output.txt
+          labels: apple-roles-checker

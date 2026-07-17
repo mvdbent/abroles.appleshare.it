@@ -151,6 +151,12 @@ body:not(.dark) #sun{display:none;}
   color:var(--primary);
 }
 .toolbar button:hover{background:var(--code-bg);}
+.toolbar .label{font-size:13px; color:var(--secondary); margin-right:2px;}
+.role-btn.active{
+  background:var(--blue);
+  color:#fff;
+  border-color:var(--blue);
+}
 .selected-count{
   font-size:13px;
   color:var(--secondary);
@@ -309,12 +315,17 @@ body:not(.dark) #sun{display:none;}
 <main class="main">
   <div class="page-header">
     <h1>Roles &amp; Permissions checker - Apple Business</h1>
-    <p>Check the organization permissions you need. On the right you'll immediately see which default role(s) qualify.<br><br>
-    <i>Source: <a href="https://support.apple.com/guide/business/default-roles-and-permissions-axm27678acfb/1/web/1" target="_blank" rel="noopener"><span style="color:#3fc69b">Apple Business User Guide – Default roles and permissions</span></a> </i> </p>
+    <p>Check the organization permissions you need. On the right you'll immediately see which default role(s) qualify.</p>
+    <p style="font-size:13px; color:var(--secondary); margin-top:6px;"><i>Source: <a href="https://support.apple.com/guide/business/default-roles-and-permissions-axm27678acfb/1/web/1" target="_blank" rel="noopener"><span style="color:#3fc69b">Apple Business User Guide – Default roles and permissions</span></a></i></p>
   </div>
 
   <div class="layout">
     <div class="col-left">
+      <div class="toolbar" style="flex-direction:column; align-items:flex-start; gap:8px;">
+        <span class="label">Select a role to see its permissions:</span>
+        <div id="roleButtons" style="display:flex; gap:8px; flex-wrap:wrap; width:100%;"></div>
+      </div>
+      <p style="font-size:13px; color:var(--secondary); margin:0;">Tip: after selecting a role, you can check extra permissions on top of it to see if that combination is possible, useful when considering a custom role.</p>
       <div class="toolbar">
         <button onclick="expandAll()">Expand all</button>
         <button onclick="collapseAll()">Collapse all</button>
@@ -453,6 +464,7 @@ const DATA = [
 ];
 
 let selected = new Set(); // keys: "cat|permName"
+let activeRoleIndex = null;
 
 function permKey(cat, name){ return cat + "|" + name; }
 
@@ -489,6 +501,49 @@ function onToggle(e){
   const key = e.target.getAttribute("data-key");
   if(e.target.checked) selected.add(key);
   else selected.delete(key);
+  if(activeRoleIndex !== null){
+    activeRoleIndex = null;
+    document.querySelectorAll(".role-btn").forEach(b => b.classList.remove("active"));
+  }
+  updateCatCounts();
+  updateResults();
+}
+
+function renderRoleButtons(){
+  const el = document.getElementById("roleButtons");
+  el.innerHTML = "";
+  ROLES.forEach((roleName, ri) => {
+    if(ri === 0) return; // skip Organization Administrator, it has everything
+    const btn = document.createElement("button");
+    btn.className = "role-btn";
+    btn.id = "rolebtn-" + ri;
+    btn.textContent = roleName;
+    btn.onclick = () => loadRolePreset(ri, btn);
+    el.appendChild(btn);
+  });
+}
+
+function loadRolePreset(roleIndex, btnEl){
+  const wasActive = activeRoleIndex === roleIndex;
+  clearAll();
+  document.querySelectorAll(".role-btn").forEach(b => b.classList.remove("active"));
+  if(wasActive){
+    activeRoleIndex = null;
+    return;
+  }
+  activeRoleIndex = roleIndex;
+  btnEl.classList.add("active");
+  DATA.forEach(group => group.perms.forEach(([name, statuses]) => {
+    const status = statuses[roleIndex];
+    if(status === "on" || status === "don"){
+      selected.add(permKey(group.cat, name));
+    }
+  }));
+  document.querySelectorAll('.perm-row input[type=checkbox]').forEach(cb => {
+    const key = cb.getAttribute("data-key");
+    cb.checked = selected.has(key);
+  });
+  expandAll();
   updateCatCounts();
   updateResults();
 }
@@ -506,6 +561,8 @@ function expandAll(){ document.querySelectorAll(".category").forEach(c => c.clas
 function collapseAll(){ document.querySelectorAll(".category").forEach(c => c.classList.add("collapsed")); }
 function clearAll(){
   selected.clear();
+  activeRoleIndex = null;
+  document.querySelectorAll(".role-btn").forEach(b => b.classList.remove("active"));
   document.querySelectorAll('.perm-row input[type=checkbox]').forEach(cb => cb.checked = false);
   updateCatCounts();
   updateResults();
@@ -576,6 +633,7 @@ function updateResults(){
 }
 
 render();
+renderRoleButtons();
 updateResults();
 </script>
 

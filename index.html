@@ -316,7 +316,7 @@ body:not(.dark) #sun{display:none;}
   <div class="page-header">
     <h1>Roles &amp; Permissions checker - Apple Business</h1>
     <p>Check the organization permissions you need. On the right you'll immediately see which default role(s) qualify.</p>
-    <p style="font-size:13px; color:var(--secondary); margin-top:6px;"><i>Source: <a href="https://support.apple.com/guide/business/default-roles-and-permissions-axm27678acfb/1/web/1" target="_blank" rel="noopener"><span style="color:#3fc69b">Apple Business User Guide – Default roles and permissions</span></a></i></p>
+    <p style="font-size:13px; color:var(--secondary); margin-top:6px;"><i>Source: <a href="https://support.apple.com/guide/business/default-roles-and-permissions-axm27678acfb/1/web/1" target="_blank" rel="noopener"><span style="color:#3fc69b">Apple Business User Guide – Default roles and permissions</span></a> · Permissions last verified against this guide: <span id="lastVerified"></span></i></p>
   </div>
 
   <div class="layout">
@@ -369,6 +369,10 @@ document.getElementById("theme-toggle").addEventListener("click",()=>{
 //        "don"  = on by default (adjustable, on by default)
 //        "doff" = off by default (adjustable, off by default)
 const ROLES = ["Organization Administrator","IT Administrator","Marketing Administrator","People Manager","Device Enrollment Manager","Content Manager"];
+
+// Update this date whenever the permissions below are re-checked against Apple's guide.
+const LAST_VERIFIED_DATE = "July 17, 2026";
+document.getElementById("lastVerified").textContent = LAST_VERIFIED_DATE;
 
 const DATA = [
   { cat:"Organization", perms:[
